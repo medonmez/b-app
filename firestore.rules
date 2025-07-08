@@ -1,0 +1,54 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Kimliği doğrulanmış kullanıcıların erişebileceği kurallar
+    match /users/{userId} {
+      // Kullanıcılar kendi verilerini okuyabilir ve güncelleyebilir
+      // Ayrıca tüm kimliği doğrulanmış kullanıcılar, diğer kullanıcıların verilerini okuyabilir
+      allow read: if request.auth != null;
+      allow write: if request.auth != null && request.auth.uid == userId;
+    }
+    
+    // Duyurular herkes tarafından okunabilir, yalnızca kimliği doğrulanmış kullanıcılar yazabilir
+    match /announcements/{announcementId} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null; 
+      
+      // Yorumlar alt koleksiyonu
+      match /comments/{commentId} {
+        allow read: if request.auth != null;
+        allow write: if request.auth != null;
+      }
+    }
+    
+    // Dalış planları herkes tarafından okunabilir
+    match /divePlans/{divePlanId} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null;
+    }
+    
+    // Havuz seansları herkes tarafından okunabilir
+    match /poolSessions/{sessionId} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null;
+    }
+    
+    // Eğitim materyalleri herkes tarafından okunabilir
+    match /trainingMaterials/{materialId} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null;
+    }
+    
+    // Dersler herkes tarafından okunabilir
+    match /lessons/{lessonId} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null;
+    }
+    
+    // Varsayılan olarak, diğer tüm belgelere erişim reddedilir
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

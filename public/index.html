@@ -1,0 +1,996 @@
+<!DOCTYPE html>
+<html lang="tr">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BÜSASapp</title>
+    <!-- CSS dosyasını bağlıyoruz -->
+    <link rel="stylesheet" href="style.css">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <style media="screen">
+      body { background: #ECEFF1; color: rgba(0,0,0,0.87); font-family: Roboto, Helvetica, Arial, sans-serif; margin: 0; padding: 0; }
+      #message { background: white; max-width: 360px; margin: 100px auto 16px; padding: 32px 24px; border-radius: 3px; }
+      #message h2 { color: #ffa100; font-weight: bold; font-size: 16px; margin: 0 0 8px; }
+      #message h1 { font-size: 22px; font-weight: 300; color: rgba(0,0,0,0.6); margin: 0 0 16px;}
+      #message p { line-height: 140%; margin: 16px 0 24px; font-size: 14px; }
+      #message a { display: block; text-align: center; background: #039be5; text-transform: uppercase; text-decoration: none; color: white; padding: 16px; border-radius: 4px; }
+      #message, #message a { box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24); }
+      #load { color: rgba(0,0,0,0.4); text-align: center; font-size: 13px; }
+      @media (max-width: 600px) {
+        body, #message { margin-top: 0; background: white; box-shadow: none; }
+        body { border-top: 16px solid #ffa100; }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="app-container">
+        <!-- Header logosu ve navigasyon -->
+        <header>
+            <div class="header-container">
+                <div class="logo">
+                    <h1>BÜSAS<span>app</span></h1>
+                </div>
+                <!-- Giriş yapmış kullanıcı için nav menü (başlangıçta gizli) -->
+                <nav id="main-nav" style="display: none;">
+                    <ul>
+                        <li><a href="#" id="nav-dashboard" class="active" onclick="showSection('dashboard-section'); return false;"><i class="fas fa-home"></i> Ana Sayfa</a></li>
+                        <li><a href="#" id="nav-profile" onclick="showSection('profile-section'); return false;"><i class="fas fa-user"></i> Profil</a></li>
+                        <!-- Admin paneli linki (başlangıçta gizli) -->
+                        <li id="admin-nav-item" style="display: none;"><a href="#" id="nav-admin" onclick="showSection('admin-panel'); return false;"><i class="fas fa-cog"></i> Admin Paneli</a></li>
+                    </ul>
+                </nav>
+                <div class="user-menu" id="user-menu" style="display: none;">
+                    <span id="user-email">user@example.com</span>
+                    <button id="logout-button" class="btn-logout" onclick="logoutUser()"><i class="fas fa-sign-out-alt"></i></button>
+                </div>
+                <button class="mobile-menu-toggle" id="mobile-menu-toggle" style="display: none;">
+                    <i class="fas fa-bars"></i>
+                </button>
+            </div>
+        </header>
+   
+    <main>
+        <!-- Yükleniyor göstergesi (başlangıçta gösterilir) -->
+        <div id="loading-container" class="loading-container">
+            <div class="loading-spinner"></div>
+            <p>BÜSASapp yükleniyor...</p>
+        </div>
+        
+        <!-- Kullanıcı giriş/kayıt alanı (başlangıçta gizli) -->
+        <div id="auth-container" class="auth-container" style="display: none;">
+            <div class="auth-card">
+                <div class="auth-header">
+                    <h2>BÜSASapp'e Hoş Geldiniz</h2>
+                    <p>Boğaziçi Üniversitesi Su Altı Sporları Kulübü</p>
+                </div>
+                
+                <!-- Giriş formu (başlangıçta gösterilir) -->
+                <div id="login-form" class="auth-form">
+                    <div class="input-group">
+                        <label for="login-email"><i class="fas fa-envelope"></i> E-posta</label>
+                        <input type="email" id="login-email" placeholder="E-posta adresiniz" required>
+                    </div>
+                    <div class="input-group">
+                        <label for="login-password"><i class="fas fa-lock"></i> Şifre</label>
+                        <input type="password" id="login-password" placeholder="Şifreniz" required>
+                    </div>
+                    <p id="login-error" class="auth-error"></p>
+                    <div class="auth-buttons">
+                        <button id="login-button" class="btn btn-primary" onclick="handleLogin()">Giriş Yap</button>
+                        <button id="show-register-button" class="btn btn-secondary" onclick="showRegisterForm()">Hesap Oluştur</button>
+                    </div>
+                </div>
+                
+                <!-- Kayıt formu (başlangıçta gizli) -->
+                <div id="register-form" class="auth-form" style="display: none;">
+                    <div class="input-group">
+                        <label for="reg-firstname"><i class="fas fa-user"></i> Ad</label>
+                        <input type="text" id="reg-firstname" placeholder="Adınız" required>
+                    </div>
+                    <div class="input-group">
+                        <label for="reg-lastname"><i class="fas fa-user"></i> Soyad</label>
+                        <input type="text" id="reg-lastname" placeholder="Soyadınız" required>
+                    </div>
+                    <div class="input-group">
+                        <label for="reg-email"><i class="fas fa-envelope"></i> E-posta</label>
+                        <input type="email" id="reg-email" placeholder="E-posta adresiniz" required>
+                    </div>
+                    <div class="input-group">
+                        <label for="reg-password"><i class="fas fa-lock"></i> Şifre</label>
+                        <input type="password" id="reg-password" placeholder="Şifreniz" required>
+                    </div>
+                    <div class="input-group">
+                        <label for="reg-birthdate"><i class="fas fa-calendar"></i> Doğum Tarihi</label>
+                        <input type="date" id="reg-birthdate" required>
+                    </div>
+                    <div class="input-group">
+                        <label for="reg-class"><i class="fas fa-graduation-cap"></i> Bölüm/Sınıf</label>
+                        <input type="text" id="reg-class" placeholder="Örn: CE-3, IE-4" required>
+                    </div>
+                    <div class="input-group">
+                        <label for="reg-year"><i class="fas fa-calendar-alt"></i> Kayıt Yılı</label>
+                        <input type="number" id="reg-year" placeholder="Örn: 2023" min="2000" max="2100" required>
+                    </div>
+                    <p id="register-error" class="auth-error"></p>
+                    <div class="auth-buttons">
+                        <button id="signup-button" class="btn btn-primary" onclick="handleSignup()">Kayıt Ol</button>
+                        <button id="show-login-button" class="btn btn-secondary" onclick="showLoginForm()">Giriş Yap</button>
+                    </div>
+                    <p class="auth-note">Kayıt olmak için BÜSAS üyesi olmanız gerekmektedir. Kayıt işlemi yönetici onayından sonra tamamlanacaktır.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Giriş yapmış kullanıcı içeriği (başlangıçta gizli) -->
+        <div id="user-content" style="display: none;">
+                <!-- Dashboard / Ana Sayfa -->
+                <section id="dashboard-section" class="content-section active">
+                    <div class="section-header">
+                        <h2>Ana Sayfa</h2>
+                    </div>
+                    <div class="navigation-grid">
+                        <div class="navigation-card" id="nav-card-announcements" onclick="showSection('announcements-section')">
+                            <div class="card-icon"><i class="fas fa-bullhorn"></i></div>
+            <h3>Duyurular</h3>
+                            <p>Kulüp duyurularını görüntüleyin</p>
+                        </div>
+                        <div class="navigation-card" id="nav-card-dive-plan" onclick="showSection('dive-plan-section')">
+                            <div class="card-icon"><i class="fas fa-water"></i></div>
+                            <h3>Dalış Planı</h3>
+                            <p>Günün dalış planını görüntüleyin</p>
+                        </div>
+                        <div class="navigation-card" id="nav-card-training" onclick="showSection('training-section')">
+                            <div class="card-icon"><i class="fas fa-book"></i></div>
+                            <h3>Eğitim</h3>
+                            <p>Eğitim materyallerini ve programını görüntüleyin</p>
+                        </div>
+                        <div class="navigation-card" id="nav-card-dive-log" onclick="showSection('dive-log-section')">
+                            <div class="card-icon"><i class="fas fa-list-check"></i></div>
+                            <h3>Dalış Kaydı</h3>
+                            <p>Dalış kayıtlarınızı yönetin</p>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Announcements Section -->
+                <section id="announcements-section" class="content-section">
+                    <div class="section-header">
+                        <button class="back-button" onclick="showSection('dashboard-section')"><i class="fas fa-arrow-left"></i></button>
+                        <h2>Duyurular</h2>
+                    </div>
+                    <div id="announcements" class="announcements-container">Duyurular yükleniyor...</div>
+                </section>
+
+                <!-- Dalış Planı -->
+                <section id="dive-plan-section" class="content-section">
+                    <div class="section-header">
+                        <button class="back-button" onclick="showSection('dashboard-section')"><i class="fas fa-arrow-left"></i></button>
+                        <h2>Günün Dalış Planı</h2>
+                    </div>
+                    <div id="dive-plan" class="dive-plan-container">Dalış planı yükleniyor...</div>
+                </section>
+
+                <!-- Eğitim -->
+                <section id="training-section" class="content-section">
+                    <div class="section-header">
+                        <button class="back-button" onclick="showSection('dashboard-section')"><i class="fas fa-arrow-left"></i></button>
+                        <h2>Eğitim</h2>
+                        <div class="tab-navigation">
+                            <button class="tab-button active" id="tab-theoretical">Teorik</button>
+                            <button class="tab-button" id="tab-pool">Havuz</button>
+                            <button class="tab-button" id="tab-lessons">Dersler</button>
+                        </div>
+                    </div>
+                    <div class="tab-content">
+                        <div id="theoretical-content" class="tab-pane active">
+                            <h3>Teorik Eğitim Materyalleri</h3>
+                            <div id="theoretical-materials">Eğitim materyalleri yükleniyor...</div>
+                        </div>
+                        <div id="pool-content" class="tab-pane">
+                            <h3>Havuz Seansları</h3>
+                            <div id="pool-sessions">Havuz programı yükleniyor...</div>
+                        </div>
+                        <div id="lessons-content" class="tab-pane">
+                            <h3>Dersler</h3>
+                            <div id="lessons-schedule">Ders programı yükleniyor...</div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Dalış Kaydı -->
+                <section id="dive-log-section" class="content-section">
+                    <div class="section-header">
+                        <button class="back-button" onclick="showSection('dashboard-section')"><i class="fas fa-arrow-left"></i></button>
+                        <h2>Dalış Kaydım</h2>
+                    </div>
+                    <div id="dive-log" class="dive-log-container">Dalış kayıtları yükleniyor...</div>
+                    <div id="qr-code-container" class="qr-code-container">
+                        <button id="generate-qr" class="btn btn-primary">QR Kod Oluştur</button>
+                        <div id="my-qr-code" class="qr-display"></div>
+                    </div>
+                    <!-- Sadece liderler için gösterilecek dalış ekleme butonu -->
+                    <div id="add-dive-container" style="display: none;">
+                        <button id="add-dive-button" class="btn btn-primary">Yeni Dalış Ekle</button>
+                    </div>
+                </section>
+
+                <!-- Profil -->
+                <section id="profile-section" class="content-section">
+                    <div class="section-header">
+                        <h2>Profilim</h2>
+                    </div>
+                    <div class="profile-card">
+                        <div class="profile-header">
+                            <div class="profile-avatar">
+                                <i class="fas fa-user-circle"></i>
+                            </div>
+                            <div class="profile-info">
+                                <h3 id="profile-name">Kullanıcı Adı</h3>
+                                <span id="profile-email">user@example.com</span>
+                                <span id="profile-role" class="profile-badge">Rol yükleniyor...</span>
+                            </div>
+                        </div>
+                        <div class="profile-stats" id="profile-stats">
+                            <div class="stat-card">
+                                <h4>Toplam Dalış</h4>
+                                <div class="stat-value" id="total-dives">0</div>
+                            </div>
+                            <div class="stat-card">
+                                <h4>Katıldığım Dersler</h4>
+                                <div class="stat-value" id="attended-lessons">0</div>
+                            </div>
+                            <div class="stat-card">
+                                <h4>Havuz Seansları</h4>
+                                <div class="stat-value" id="pool-sessions-count">0</div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+        </div>
+        
+        <!-- Admin Paneli (başlangıçta gizli, sadece admin kullanıcılar için gösterilir) -->
+        <section id="admin-panel" class="content-section" style="display: none;">
+            <div class="section-header">
+                <button class="back-button" onclick="showSection('dashboard-section')"><i class="fas fa-arrow-left"></i></button>
+                <h2>Admin Paneli</h2>
+                <div class="tab-navigation">
+                    <button class="tab-button active" id="tab-admin-announcements">Duyurular</button>
+                    <button class="tab-button" id="tab-admin-users">Kullanıcılar</button>
+                    <button class="tab-button" id="tab-admin-planning">Planlama</button>
+                    <button class="tab-button" id="tab-admin-dives">Dalış Ekle</button>
+                    <button class="tab-button" id="tab-admin-training">Eğitim</button>
+                </div>
+            </div>
+            <div class="tab-content">
+                <!-- Admin Duyurular Tab -->
+                <div id="admin-announcements-content" class="tab-pane active">
+                    <h3>Duyuru Yönetimi</h3>
+                    <div class="admin-form">
+                        <div class="form-group">
+                            <label for="announcement-title">Başlık</label>
+                            <input type="text" id="announcement-title" placeholder="Duyuru başlığı">
+                        </div>
+                        <div class="form-group">
+                            <label for="announcement-content">İçerik</label>
+                            <div id="rich-editor-toolbar">
+                                <button type="button" class="editor-btn" data-command="bold" title="Kalın"><i class="fas fa-bold"></i></button>
+                                <button type="button" class="editor-btn" data-command="italic" title="İtalik"><i class="fas fa-italic"></i></button>
+                                <button type="button" class="editor-btn" data-command="underline" title="Altı Çizili"><i class="fas fa-underline"></i></button>
+                                <button type="button" class="editor-btn" data-command="strikeThrough" title="Üstü Çizili"><i class="fas fa-strikethrough"></i></button>
+                                <span class="toolbar-divider"></span>
+                                <button type="button" class="editor-btn" data-command="justifyLeft" title="Sola Hizala"><i class="fas fa-align-left"></i></button>
+                                <button type="button" class="editor-btn" data-command="justifyCenter" title="Ortala"><i class="fas fa-align-center"></i></button>
+                                <button type="button" class="editor-btn" data-command="justifyRight" title="Sağa Hizala"><i class="fas fa-align-right"></i></button>
+                                <span class="toolbar-divider"></span>
+                                <button type="button" class="editor-btn" data-command="insertUnorderedList" title="Madde İşaretleri"><i class="fas fa-list-ul"></i></button>
+                                <button type="button" class="editor-btn" data-command="insertOrderedList" title="Numaralı Liste"><i class="fas fa-list-ol"></i></button>
+                                <span class="toolbar-divider"></span>
+                                <button type="button" class="editor-btn" data-command="createLink" title="Bağlantı Ekle"><i class="fas fa-link"></i></button>
+                                <button type="button" class="editor-btn" data-command="unlink" title="Bağlantıyı Kaldır"><i class="fas fa-unlink"></i></button>
+                                <span class="toolbar-divider"></span>
+                                <div class="editor-dropdown">
+                                    <button type="button" class="editor-dropdown-toggle"><span id="current-font">Font</span> <i class="fas fa-caret-down"></i></button>
+                                    <div class="editor-dropdown-menu">
+                                        <button type="button" class="dropdown-item" data-command="fontName" data-value="Arial">Arial</button>
+                                        <button type="button" class="dropdown-item" data-command="fontName" data-value="Helvetica">Helvetica</button>
+                                        <button type="button" class="dropdown-item" data-command="fontName" data-value="Times New Roman">Times New Roman</button>
+                                        <button type="button" class="dropdown-item" data-command="fontName" data-value="Sans Serif">Sans Serif</button>
+                                        <button type="button" class="dropdown-item" data-command="fontName" data-value="Courier New">Courier New</button>
+                                    </div>
+                                </div>
+                                <div class="editor-dropdown">
+                                    <button type="button" class="editor-dropdown-toggle"><span id="current-size">Boyut</span> <i class="fas fa-caret-down"></i></button>
+                                    <div class="editor-dropdown-menu">
+                                        <button type="button" class="dropdown-item" data-command="fontSize" data-value="1">Çok Küçük</button>
+                                        <button type="button" class="dropdown-item" data-command="fontSize" data-value="2">Küçük</button>
+                                        <button type="button" class="dropdown-item" data-command="fontSize" data-value="3">Normal</button>
+                                        <button type="button" class="dropdown-item" data-command="fontSize" data-value="4">Büyük</button>
+                                        <button type="button" class="dropdown-item" data-command="fontSize" data-value="5">Çok Büyük</button>
+                                    </div>
+                                </div>
+                                <span class="toolbar-divider"></span>
+                                <button type="button" class="editor-btn" data-command="foreColor" data-value="#000000" title="Siyah" style="color: #000000;"><i class="fas fa-tint"></i></button>
+                                <button type="button" class="editor-btn" data-command="foreColor" data-value="#0000FF" title="Mavi" style="color: #0000FF;"><i class="fas fa-tint"></i></button>
+                                <button type="button" class="editor-btn" data-command="foreColor" data-value="#FF0000" title="Kırmızı" style="color: #FF0000;"><i class="fas fa-tint"></i></button>
+                            </div>
+                            <div id="announcement-content-editor" class="rich-editor-content" contenteditable="true" placeholder="Duyuru içeriği..."></div>
+                            <textarea id="announcement-content" style="display: none;"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="announcement-priority">Öncelik</label>
+                            <select id="announcement-priority">
+                                <option value="normal">Normal</option>
+                                <option value="high">Yüksek</option>
+                            </select>
+                        </div>
+                        <div class="form-actions">
+                            <button id="add-announcement-button" class="btn btn-primary">Duyuru Ekle</button>
+                        </div>
+                    </div>
+                    <div class="admin-data-table">
+                        <h4>Mevcut Duyurular</h4>
+                        <div id="admin-announcements-list">Duyurular yükleniyor...</div>
+                    </div>
+                </div>
+                
+                <!-- Admin Kullanıcılar Tab -->
+                <div id="admin-users-content" class="tab-pane">
+                    <h3>Kullanıcı Yönetimi</h3>
+                    <div class="admin-form">
+                        <div class="form-group">
+                            <label for="user-search">Kullanıcı Ara</label>
+                            <input type="text" id="user-search" placeholder="İsim veya e-posta">
+                        </div>
+                        <div class="form-actions">
+                            <button id="search-users-button" class="btn btn-secondary">Ara</button>
+                        </div>
+                    </div>
+                    <div class="admin-data-table">
+                        <h4>Tüm Kullanıcılar</h4>
+                        <div id="users-list">Kullanıcılar yükleniyor...</div>
+                    </div>
+                    <div class="admin-data-table" id="pending-users-section">
+                        <h4>Onay Bekleyen Kullanıcılar</h4>
+                        <div id="pending-users-list">Bekleyen kullanıcılar yükleniyor...</div>
+                    </div>
+                </div>
+                
+                <!-- Admin Planlama Tab -->
+                <div id="admin-planning-content" class="tab-pane">
+                    <h3>Dalış Planlaması</h3>
+                    <div class="admin-form">
+                        <div class="form-group">
+                            <label for="planning-date">Tarih</label>
+                            <input type="date" id="planning-date">
+                        </div>
+                        <div class="form-group">
+                            <label for="planning-location">Yer</label>
+                            <input type="text" id="planning-location" placeholder="Dalış yeri">
+                        </div>
+                        <div class="form-group">
+                            <label for="planning-region">Bölge</label>
+                            <input type="text" id="planning-region" placeholder="Dalış bölgesi">
+                        </div>
+                        <div class="form-group">
+                            <label for="planning-publish-datetime">Yayınlanma Tarihi/Saati</label>
+                            <input type="datetime-local" id="planning-publish-datetime">
+                            <small>Bu tarih ve saatten sonra dalış planı ana sayfada gösterilecektir.</small>
+                        </div>
+                    </div>
+                    
+                    <div class="card" id="divePlanningCard">
+                      <h1 class="card-title">Dalış Planlama</h1>
+                      <div class="card-content">
+                        <table class="dive-planning-table" id="divePlanningTable">
+                          <thead>
+                            <tr>
+                              <th>Slot</th>
+                              <th class="group-header">Grup 1</th>
+                              <th class="group-header">Grup 2</th>
+                              <th class="group-header">Grup 3</th>
+                              <th class="group-header">Grup 4</th>
+                              <th class="group-header">Grup 5</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            <!-- Slot 1 -->
+                            <tr>
+                              <td class="slot-header" rowspan="5">Slot 1</td>
+                              <td class="dive-planning-cell" data-slot="1" data-group="1" data-position="1">&nbsp;</td>
+                              <td class="dive-planning-cell" data-slot="1" data-group="2" data-position="1">&nbsp;</td>
+                              <td class="dive-planning-cell" data-slot="1" data-group="3" data-position="1">&nbsp;</td>
+                              <td class="dive-planning-cell" data-slot="1" data-group="4" data-position="1">&nbsp;</td>
+                              <td class="dive-planning-cell" data-slot="1" data-group="5" data-position="1">&nbsp;</td>
+                            </tr>
+                            <tr>
+                              <td class="dive-planning-cell" data-slot="1" data-group="1" data-position="2">&nbsp;</td>
+                              <td class="dive-planning-cell" data-slot="1" data-group="2" data-position="2">&nbsp;</td>
+                              <td class="dive-planning-cell" data-slot="1" data-group="3" data-position="2">&nbsp;</td>
+                              <td class="dive-planning-cell" data-slot="1" data-group="4" data-position="2">&nbsp;</td>
+                              <td class="dive-planning-cell" data-slot="1" data-group="5" data-position="2">&nbsp;</td>
+                            </tr>
+                            <tr>
+                              <td class="dive-planning-cell" data-slot="1" data-group="1" data-position="3">&nbsp;</td>
+                              <td class="dive-planning-cell" data-slot="1" data-group="2" data-position="3">&nbsp;</td>
+                              <td class="dive-planning-cell" data-slot="1" data-group="3" data-position="3">&nbsp;</td>
+                              <td class="dive-planning-cell" data-slot="1" data-group="4" data-position="3">&nbsp;</td>
+                              <td class="dive-planning-cell" data-slot="1" data-group="5" data-position="3">&nbsp;</td>
+                            </tr>
+                            <tr>
+                              <td class="dive-planning-cell" data-slot="1" data-group="1" data-position="4">&nbsp;</td>
+                              <td class="dive-planning-cell" data-slot="1" data-group="2" data-position="4">&nbsp;</td>
+                              <td class="dive-planning-cell" data-slot="1" data-group="3" data-position="4">&nbsp;</td>
+                              <td class="dive-planning-cell" data-slot="1" data-group="4" data-position="4">&nbsp;</td>
+                              <td class="dive-planning-cell" data-slot="1" data-group="5" data-position="4">&nbsp;</td>
+                            </tr>
+                            <tr>
+                              <td class="dive-planning-cell" data-slot="1" data-group="1" data-position="5">&nbsp;<span class="position-label">Eğitmen</span></td>
+                              <td class="dive-planning-cell" data-slot="1" data-group="2" data-position="5">&nbsp;<span class="position-label">Eğitmen</span></td>
+                              <td class="dive-planning-cell" data-slot="1" data-group="3" data-position="5">&nbsp;<span class="position-label">Eğitmen</span></td>
+                              <td class="dive-planning-cell" data-slot="1" data-group="4" data-position="5">&nbsp;<span class="position-label">Eğitmen</span></td>
+                              <td class="dive-planning-cell" data-slot="1" data-group="5" data-position="5">&nbsp;<span class="position-label">Eğitmen</span></td>
+                            </tr>
+                            
+                            <!-- Slot 2 -->
+                            <tr>
+                              <td class="slot-header" rowspan="5">Slot 2</td>
+                              <td class="dive-planning-cell" data-slot="2" data-group="1" data-position="1">&nbsp;</td>
+                              <td class="dive-planning-cell" data-slot="2" data-group="2" data-position="1">&nbsp;</td>
+                              <td class="dive-planning-cell" data-slot="2" data-group="3" data-position="1">&nbsp;</td>
+                              <td class="dive-planning-cell" data-slot="2" data-group="4" data-position="1">&nbsp;</td>
+                              <td class="dive-planning-cell" data-slot="2" data-group="5" data-position="1">&nbsp;</td>
+                            </tr>
+                            <tr>
+                              <td class="dive-planning-cell" data-slot="2" data-group="1" data-position="2">&nbsp;</td>
+                              <td class="dive-planning-cell" data-slot="2" data-group="2" data-position="2">&nbsp;</td>
+                              <td class="dive-planning-cell" data-slot="2" data-group="3" data-position="2">&nbsp;</td>
+                              <td class="dive-planning-cell" data-slot="2" data-group="4" data-position="2">&nbsp;</td>
+                              <td class="dive-planning-cell" data-slot="2" data-group="5" data-position="2">&nbsp;</td>
+                            </tr>
+                            <tr>
+                              <td class="dive-planning-cell" data-slot="2" data-group="1" data-position="3">&nbsp;</td>
+                              <td class="dive-planning-cell" data-slot="2" data-group="2" data-position="3">&nbsp;</td>
+                              <td class="dive-planning-cell" data-slot="2" data-group="3" data-position="3">&nbsp;</td>
+                              <td class="dive-planning-cell" data-slot="2" data-group="4" data-position="3">&nbsp;</td>
+                              <td class="dive-planning-cell" data-slot="2" data-group="5" data-position="3">&nbsp;</td>
+                            </tr>
+                            <tr>
+                              <td class="dive-planning-cell" data-slot="2" data-group="1" data-position="4">&nbsp;</td>
+                              <td class="dive-planning-cell" data-slot="2" data-group="2" data-position="4">&nbsp;</td>
+                              <td class="dive-planning-cell" data-slot="2" data-group="3" data-position="4">&nbsp;</td>
+                              <td class="dive-planning-cell" data-slot="2" data-group="4" data-position="4">&nbsp;</td>
+                              <td class="dive-planning-cell" data-slot="2" data-group="5" data-position="4">&nbsp;</td>
+                            </tr>
+                            <tr>
+                              <td class="dive-planning-cell" data-slot="2" data-group="1" data-position="5">&nbsp;<span class="position-label">Eğitmen</span></td>
+                              <td class="dive-planning-cell" data-slot="2" data-group="2" data-position="5">&nbsp;<span class="position-label">Eğitmen</span></td>
+                              <td class="dive-planning-cell" data-slot="2" data-group="3" data-position="5">&nbsp;<span class="position-label">Eğitmen</span></td>
+                              <td class="dive-planning-cell" data-slot="2" data-group="4" data-position="5">&nbsp;<span class="position-label">Eğitmen</span></td>
+                              <td class="dive-planning-cell" data-slot="2" data-group="5" data-position="5">&nbsp;<span class="position-label">Eğitmen</span></td>
+                            </tr>
+                            
+                            <!-- Slot 3 -->
+                            <tr>
+                              <td class="slot-header" rowspan="5">Slot 3</td>
+                              <td class="dive-planning-cell" data-slot="3" data-group="1" data-position="1">&nbsp;</td>
+                              <td class="dive-planning-cell" data-slot="3" data-group="2" data-position="1">&nbsp;</td>
+                              <td class="dive-planning-cell" data-slot="3" data-group="3" data-position="1">&nbsp;</td>
+                              <td class="dive-planning-cell" data-slot="3" data-group="4" data-position="1">&nbsp;</td>
+                              <td class="dive-planning-cell" data-slot="3" data-group="5" data-position="1">&nbsp;</td>
+                            </tr>
+                            <tr>
+                              <td class="dive-planning-cell" data-slot="3" data-group="1" data-position="2">&nbsp;</td>
+                              <td class="dive-planning-cell" data-slot="3" data-group="2" data-position="2">&nbsp;</td>
+                              <td class="dive-planning-cell" data-slot="3" data-group="3" data-position="2">&nbsp;</td>
+                              <td class="dive-planning-cell" data-slot="3" data-group="4" data-position="2">&nbsp;</td>
+                              <td class="dive-planning-cell" data-slot="3" data-group="5" data-position="2">&nbsp;</td>
+                            </tr>
+                            <tr>
+                              <td class="dive-planning-cell" data-slot="3" data-group="1" data-position="3">&nbsp;</td>
+                              <td class="dive-planning-cell" data-slot="3" data-group="2" data-position="3">&nbsp;</td>
+                              <td class="dive-planning-cell" data-slot="3" data-group="3" data-position="3">&nbsp;</td>
+                              <td class="dive-planning-cell" data-slot="3" data-group="4" data-position="3">&nbsp;</td>
+                              <td class="dive-planning-cell" data-slot="3" data-group="5" data-position="3">&nbsp;</td>
+                            </tr>
+                            <tr>
+                              <td class="dive-planning-cell" data-slot="3" data-group="1" data-position="4">&nbsp;</td>
+                              <td class="dive-planning-cell" data-slot="3" data-group="2" data-position="4">&nbsp;</td>
+                              <td class="dive-planning-cell" data-slot="3" data-group="3" data-position="4">&nbsp;</td>
+                              <td class="dive-planning-cell" data-slot="3" data-group="4" data-position="4">&nbsp;</td>
+                              <td class="dive-planning-cell" data-slot="3" data-group="5" data-position="4">&nbsp;</td>
+                            </tr>
+                            <tr>
+                              <td class="dive-planning-cell" data-slot="3" data-group="1" data-position="5">&nbsp;<span class="position-label">Eğitmen</span></td>
+                              <td class="dive-planning-cell" data-slot="3" data-group="2" data-position="5">&nbsp;<span class="position-label">Eğitmen</span></td>
+                              <td class="dive-planning-cell" data-slot="3" data-group="3" data-position="5">&nbsp;<span class="position-label">Eğitmen</span></td>
+                              <td class="dive-planning-cell" data-slot="3" data-group="4" data-position="5">&nbsp;<span class="position-label">Eğitmen</span></td>
+                              <td class="dive-planning-cell" data-slot="3" data-group="5" data-position="5">&nbsp;<span class="position-label">Eğitmen</span></td>
+                            </tr>
+                            
+                            <!-- Slot 4 -->
+                            <tr>
+                              <td class="slot-header" rowspan="5">Slot 4</td>
+                              <td class="dive-planning-cell" data-slot="4" data-group="1" data-position="1"></td>
+                              <td class="dive-planning-cell" data-slot="4" data-group="2" data-position="1"></td>
+                              <td class="dive-planning-cell" data-slot="4" data-group="3" data-position="1"></td>
+                              <td class="dive-planning-cell" data-slot="4" data-group="4" data-position="1"></td>
+                              <td class="dive-planning-cell" data-slot="4" data-group="5" data-position="1"></td>
+                            </tr>
+                            <tr>
+                              <td class="dive-planning-cell" data-slot="4" data-group="1" data-position="2"></td>
+                              <td class="dive-planning-cell" data-slot="4" data-group="2" data-position="2"></td>
+                              <td class="dive-planning-cell" data-slot="4" data-group="3" data-position="2"></td>
+                              <td class="dive-planning-cell" data-slot="4" data-group="4" data-position="2"></td>
+                              <td class="dive-planning-cell" data-slot="4" data-group="5" data-position="2"></td>
+                            </tr>
+                            <tr>
+                              <td class="dive-planning-cell" data-slot="4" data-group="1" data-position="3"></td>
+                              <td class="dive-planning-cell" data-slot="4" data-group="2" data-position="3"></td>
+                              <td class="dive-planning-cell" data-slot="4" data-group="3" data-position="3"></td>
+                              <td class="dive-planning-cell" data-slot="4" data-group="4" data-position="3"></td>
+                              <td class="dive-planning-cell" data-slot="4" data-group="5" data-position="3"></td>
+                            </tr>
+                            <tr>
+                              <td class="dive-planning-cell" data-slot="4" data-group="1" data-position="4"></td>
+                              <td class="dive-planning-cell" data-slot="4" data-group="2" data-position="4"></td>
+                              <td class="dive-planning-cell" data-slot="4" data-group="3" data-position="4"></td>
+                              <td class="dive-planning-cell" data-slot="4" data-group="4" data-position="4"></td>
+                              <td class="dive-planning-cell" data-slot="4" data-group="5" data-position="4"></td>
+                            </tr>
+                            <tr>
+                              <td class="dive-planning-cell" data-slot="4" data-group="1" data-position="5"><span class="position-label">Eğitmen</span></td>
+                              <td class="dive-planning-cell" data-slot="4" data-group="2" data-position="5"><span class="position-label">Eğitmen</span></td>
+                              <td class="dive-planning-cell" data-slot="4" data-group="3" data-position="5"><span class="position-label">Eğitmen</span></td>
+                              <td class="dive-planning-cell" data-slot="4" data-group="4" data-position="5"><span class="position-label">Eğitmen</span></td>
+                              <td class="dive-planning-cell" data-slot="4" data-group="5" data-position="5"><span class="position-label">Eğitmen</span></td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                    
+                    <div class="dive-save-container">
+                        <button id="save-planning-button" class="btn btn-primary">Planlamayı Kaydet</button>
+                    </div>
+                    
+                    <div class="admin-data-table">
+                        <h4>Mevcut Dalış Planlamaları</h4>
+                        <div id="admin-dive-planning-list">Dalış planlamaları yükleniyor...</div>
+                    </div>
+                </div>
+                
+                <!-- Admin Dalış Ekle Tab -->
+                <div id="admin-dives-content" class="tab-pane">
+                    <h3>Dalış Yönetimi</h3>
+                    <div class="admin-form">
+                        <div class="form-group">
+                            <label for="dive-date">Tarih</label>
+                            <input type="date" id="dive-date">
+                        </div>
+                        <div class="form-group">
+                            <label for="dive-location">Yer</label>
+                            <input type="text" id="dive-location" placeholder="Dalış yeri">
+                        </div>
+                        <div class="form-group">
+                            <label for="dive-details">Detaylar</label>
+                            <textarea id="dive-details" placeholder="Dalış detayları"></textarea>
+                        </div>
+                        <div class="form-actions">
+                            <button id="add-dive-plan-button" class="btn btn-primary">Dalış Planı Ekle</button>
+                        </div>
+                    </div>
+                    <div class="admin-data-table">
+                        <h4>Dalış Planları</h4>
+                        <div id="admin-dive-plans-list">Dalış planları yükleniyor...</div>
+                    </div>
+                </div>
+                
+                <!-- Admin Eğitim Tab -->
+                <div id="admin-training-content" class="tab-pane">
+                    <h3>Eğitim Yönetimi</h3>
+                    <div class="tab-navigation sub-tabs">
+                        <button class="tab-button active" id="tab-admin-theoretical">Teorik</button>
+                        <button class="tab-button" id="tab-admin-pool">Havuz</button>
+                        <button class="tab-button" id="tab-admin-lessons">Dersler</button>
+                    </div>
+                    <div class="tab-content">
+                        <!-- Teorik Eğitim Tab -->
+                        <div id="admin-theoretical-content" class="tab-pane active">
+                            <div class="admin-form">
+                                <div class="form-group">
+                                    <label for="material-title">Başlık</label>
+                                    <input type="text" id="material-title" placeholder="Materyal başlığı">
+                                </div>
+                                <div class="form-group">
+                                    <label for="material-description">Açıklama</label>
+                                    <textarea id="material-description" placeholder="Materyal açıklaması"></textarea>
+                                </div>
+                                <div class="form-group">
+                                    <label for="material-link">Link</label>
+                                    <input type="text" id="material-link" placeholder="Materyal linki">
+                                </div>
+                                <div class="form-group">
+                                    <label for="material-role">Erişim Seviyesi</label>
+                                    <select id="material-role">
+                                        <option value="kursiyer">Kursiyer</option>
+                                        <option value="1*">1*</option>
+                                        <option value="asistan">Asistan</option>
+                                        <option value="lider">Lider</option>
+                                        <option value="egitmen">Eğitmen</option>
+                                    </select>
+                                </div>
+                                <div class="form-actions">
+                                    <button id="add-material-button" class="btn btn-primary">Materyal Ekle</button>
+                                </div>
+                            </div>
+                            <div class="admin-data-table">
+                                <h4>Eğitim Materyalleri</h4>
+                                <div id="admin-materials-list">Materyaller yükleniyor...</div>
+                            </div>
+                        </div>
+                        
+                        <!-- Havuz Tab -->
+                        <div id="admin-pool-content" class="tab-pane">
+                            <div class="admin-form">
+                                <div class="form-group">
+                                    <label for="pool-date">Tarih</label>
+                                    <input type="date" id="pool-date">
+                                </div>
+                                <div class="form-group">
+                                    <label for="pool-time">Saat</label>
+                                    <input type="time" id="pool-time">
+                                </div>
+                                <div class="form-group">
+                                    <label for="pool-capacity">Kapasite</label>
+                                    <input type="number" id="pool-capacity" min="1" value="10">
+                                </div>
+                                <div class="form-group">
+                                    <label for="pool-notes">Notlar</label>
+                                    <textarea id="pool-notes" placeholder="Havuz seansı notları"></textarea>
+                                </div>
+                                <div class="form-actions">
+                                    <button id="add-pool-session-button" class="btn btn-primary">Havuz Seansı Ekle</button>
+                                </div>
+                            </div>
+                            <div class="admin-data-table">
+                                <h4>Havuz Seansları</h4>
+                                <div id="admin-pool-sessions-list">Havuz seansları yükleniyor...</div>
+                            </div>
+                        </div>
+                        
+                        <!-- Dersler Tab -->
+                        <div id="admin-lessons-content" class="tab-pane">
+                            <div class="admin-form">
+                                <div class="form-group">
+                                    <label for="lesson-title">Başlık</label>
+                                    <input type="text" id="lesson-title" placeholder="Ders başlığı">
+                                </div>
+                                <div class="form-group">
+                                    <label for="lesson-date">Tarih</label>
+                                    <input type="date" id="lesson-date">
+                                </div>
+                                <div class="form-group">
+                                    <label for="lesson-time">Saat</label>
+                                    <input type="time" id="lesson-time">
+                                </div>
+                                <div class="form-group">
+                                    <label for="lesson-instructor">Eğitmen</label>
+                                    <input type="text" id="lesson-instructor" placeholder="Eğitmen adı">
+                                </div>
+                                <div class="form-group">
+                                    <label for="lesson-notes">Notlar</label>
+                                    <textarea id="lesson-notes" placeholder="Ders notları"></textarea>
+                                </div>
+                                <div class="form-actions">
+                                    <button id="add-lesson-button" class="btn btn-primary">Ders Ekle</button>
+                                </div>
+                            </div>
+                            <div class="admin-data-table">
+                                <h4>Dersler</h4>
+                                <div id="admin-lessons-list">Dersler yükleniyor...</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+</main>
+
+        <footer>
+            <div class="footer-content">
+                <p>&copy; 2023 Boğaziçi Üniversitesi Sualtı Sporları ve Araştırma Kulübü</p>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Modal bileşeni -->
+    <div id="modal-overlay" class="modal-overlay">
+        <div id="modal-container" class="modal-container">
+            <div class="modal-header">
+                <h3 id="modal-title">Modal Başlık</h3>
+                <button id="modal-close" class="modal-close"><i class="fas fa-times"></i></button>
+            </div>
+            <div id="modal-content" class="modal-content">
+                <!-- Modal içeriği dinamik olarak yüklenecek -->
+            </div>
+            <div id="modal-footer" class="modal-footer">
+                <button id="modal-cancel" class="btn btn-secondary">İptal</button>
+                <button id="modal-confirm" class="btn btn-primary">Tamam</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Duyuru detay modalı -->
+    <div id="announcement-modal-overlay" class="modal-overlay">
+        <div id="announcement-modal-container" class="modal-container announcement-detail-modal">
+            <div class="modal-header">
+                <h3 id="announcement-modal-title">Duyuru Başlık</h3>
+                <button id="announcement-modal-close" class="modal-close"><i class="fas fa-times"></i></button>
+            </div>
+            <div id="announcement-modal-content" class="modal-content">
+                <div class="announcement-detail-content">
+                    <!-- Duyuru içeriği burada görüntülenecek -->
+                </div>
+                <div class="announcement-comments">
+                    <h4>Yorumlar</h4>
+                    <div id="comments-container">
+                        <!-- Yorumlar burada listelenecek -->
+                    </div>
+                    <div class="comment-form">
+                        <textarea id="comment-input" placeholder="Yorumunuzu yazın..."></textarea>
+                        <button id="add-comment-button" class="btn btn-primary">Yorum Ekle</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- User Selection Modal for Dive Planning -->
+    <div id="user-selection-modal-overlay" class="modal-overlay">
+        <div id="user-selection-modal-container" class="modal-container">
+            <div class="modal-header">
+                <h3 id="user-selection-modal-title">Kullanıcı Seçimi</h3>
+                <button id="user-selection-modal-close" class="modal-close"><i class="fas fa-times"></i></button>
+            </div>
+            <div id="user-selection-modal-content" class="modal-content">
+                <input type="text" id="user-search-input" class="user-search" placeholder="Kullanıcı ara...">
+                <div class="user-selector-container">
+                    <ul id="user-selection-list" class="user-list">
+                        <!-- Users will be loaded here -->
+                    </ul>
+                </div>
+            </div>
+            <div id="user-selection-modal-footer" class="modal-footer">
+                <button id="user-selection-delete" class="btn btn-danger"><i class="fas fa-trash"></i> Kullanıcıyı Sil</button>
+                <button id="user-selection-cancel" class="btn btn-secondary">İptal</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Dive Planning Edit Modal -->
+    <div id="planning-edit-modal-overlay" class="modal-overlay">
+        <div id="planning-edit-modal-container" class="modal-container" style="max-width: 90%; width: 900px;">
+            <div class="modal-header">
+                <h3 id="planning-edit-modal-title">Dalış Planlaması Düzenle</h3>
+                <button id="planning-edit-modal-close" class="modal-close"><i class="fas fa-times"></i></button>
+            </div>
+            <div id="planning-edit-modal-content" class="modal-content">
+                <div class="admin-form">
+                    <div class="form-group">
+                        <label for="edit-planning-date">Tarih</label>
+                        <input type="date" id="edit-planning-date">
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-planning-location">Yer</label>
+                        <input type="text" id="edit-planning-location" placeholder="Dalış yeri">
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-planning-region">Bölge</label>
+                        <input type="text" id="edit-planning-region" placeholder="Dalış bölgesi">
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-planning-publish-datetime">Yayınlanma Tarihi/Saati</label>
+                        <input type="datetime-local" id="edit-planning-publish-datetime">
+                        <small>Bu tarih ve saatten sonra dalış planı ana sayfada gösterilecektir.</small>
+                    </div>
+                </div>
+                
+                <div class="card" id="editDivePlanningCard">
+                  <h1 class="card-title">Dalış Planlama</h1>
+                  <div class="card-content">
+                    <table class="dive-planning-table" id="editDivePlanningTable">
+                      <thead>
+                        <tr>
+                          <th>Slot</th>
+                          <th class="group-header">Grup 1</th>
+                          <th class="group-header">Grup 2</th>
+                          <th class="group-header">Grup 3</th>
+                          <th class="group-header">Grup 4</th>
+                          <th class="group-header">Grup 5</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <!-- Slot 1 -->
+                        <tr>
+                          <td class="slot-header" rowspan="5">Slot 1</td>
+                          <td class="dive-planning-cell" data-slot="1" data-group="1" data-position="1">&nbsp;</td>
+                          <td class="dive-planning-cell" data-slot="1" data-group="2" data-position="1">&nbsp;</td>
+                          <td class="dive-planning-cell" data-slot="1" data-group="3" data-position="1">&nbsp;</td>
+                          <td class="dive-planning-cell" data-slot="1" data-group="4" data-position="1">&nbsp;</td>
+                          <td class="dive-planning-cell" data-slot="1" data-group="5" data-position="1">&nbsp;</td>
+                        </tr>
+                        <tr>
+                          <td class="dive-planning-cell" data-slot="1" data-group="1" data-position="2">&nbsp;</td>
+                          <td class="dive-planning-cell" data-slot="1" data-group="2" data-position="2">&nbsp;</td>
+                          <td class="dive-planning-cell" data-slot="1" data-group="3" data-position="2">&nbsp;</td>
+                          <td class="dive-planning-cell" data-slot="1" data-group="4" data-position="2">&nbsp;</td>
+                          <td class="dive-planning-cell" data-slot="1" data-group="5" data-position="2">&nbsp;</td>
+                        </tr>
+                        <tr>
+                          <td class="dive-planning-cell" data-slot="1" data-group="1" data-position="3">&nbsp;</td>
+                          <td class="dive-planning-cell" data-slot="1" data-group="2" data-position="3">&nbsp;</td>
+                          <td class="dive-planning-cell" data-slot="1" data-group="3" data-position="3">&nbsp;</td>
+                          <td class="dive-planning-cell" data-slot="1" data-group="4" data-position="3">&nbsp;</td>
+                          <td class="dive-planning-cell" data-slot="1" data-group="5" data-position="3">&nbsp;</td>
+                        </tr>
+                        <tr>
+                          <td class="dive-planning-cell" data-slot="1" data-group="1" data-position="4">&nbsp;</td>
+                          <td class="dive-planning-cell" data-slot="1" data-group="2" data-position="4">&nbsp;</td>
+                          <td class="dive-planning-cell" data-slot="1" data-group="3" data-position="4">&nbsp;</td>
+                          <td class="dive-planning-cell" data-slot="1" data-group="4" data-position="4">&nbsp;</td>
+                          <td class="dive-planning-cell" data-slot="1" data-group="5" data-position="4">&nbsp;</td>
+                        </tr>
+                        <tr>
+                          <td class="dive-planning-cell" data-slot="1" data-group="1" data-position="5">&nbsp;<span class="position-label">Eğitmen</span></td>
+                          <td class="dive-planning-cell" data-slot="1" data-group="2" data-position="5">&nbsp;<span class="position-label">Eğitmen</span></td>
+                          <td class="dive-planning-cell" data-slot="1" data-group="3" data-position="5">&nbsp;<span class="position-label">Eğitmen</span></td>
+                          <td class="dive-planning-cell" data-slot="1" data-group="4" data-position="5">&nbsp;<span class="position-label">Eğitmen</span></td>
+                          <td class="dive-planning-cell" data-slot="1" data-group="5" data-position="5">&nbsp;<span class="position-label">Eğitmen</span></td>
+                        </tr>
+                        
+                        <!-- Slot 2 -->
+                        <tr>
+                          <td class="slot-header" rowspan="5">Slot 2</td>
+                          <td class="dive-planning-cell" data-slot="2" data-group="1" data-position="1">&nbsp;</td>
+                          <td class="dive-planning-cell" data-slot="2" data-group="2" data-position="1">&nbsp;</td>
+                          <td class="dive-planning-cell" data-slot="2" data-group="3" data-position="1">&nbsp;</td>
+                          <td class="dive-planning-cell" data-slot="2" data-group="4" data-position="1">&nbsp;</td>
+                          <td class="dive-planning-cell" data-slot="2" data-group="5" data-position="1">&nbsp;</td>
+                        </tr>
+                        <tr>
+                          <td class="dive-planning-cell" data-slot="2" data-group="1" data-position="2">&nbsp;</td>
+                          <td class="dive-planning-cell" data-slot="2" data-group="2" data-position="2">&nbsp;</td>
+                          <td class="dive-planning-cell" data-slot="2" data-group="3" data-position="2">&nbsp;</td>
+                          <td class="dive-planning-cell" data-slot="2" data-group="4" data-position="2">&nbsp;</td>
+                          <td class="dive-planning-cell" data-slot="2" data-group="5" data-position="2">&nbsp;</td>
+                        </tr>
+                        <tr>
+                          <td class="dive-planning-cell" data-slot="2" data-group="1" data-position="3">&nbsp;</td>
+                          <td class="dive-planning-cell" data-slot="2" data-group="2" data-position="3">&nbsp;</td>
+                          <td class="dive-planning-cell" data-slot="2" data-group="3" data-position="3">&nbsp;</td>
+                          <td class="dive-planning-cell" data-slot="2" data-group="4" data-position="3">&nbsp;</td>
+                          <td class="dive-planning-cell" data-slot="2" data-group="5" data-position="3">&nbsp;</td>
+                        </tr>
+                        <tr>
+                          <td class="dive-planning-cell" data-slot="2" data-group="1" data-position="4">&nbsp;</td>
+                          <td class="dive-planning-cell" data-slot="2" data-group="2" data-position="4">&nbsp;</td>
+                          <td class="dive-planning-cell" data-slot="2" data-group="3" data-position="4">&nbsp;</td>
+                          <td class="dive-planning-cell" data-slot="2" data-group="4" data-position="4">&nbsp;</td>
+                          <td class="dive-planning-cell" data-slot="2" data-group="5" data-position="4">&nbsp;</td>
+                        </tr>
+                        <tr>
+                          <td class="dive-planning-cell" data-slot="2" data-group="1" data-position="5">&nbsp;<span class="position-label">Eğitmen</span></td>
+                          <td class="dive-planning-cell" data-slot="2" data-group="2" data-position="5">&nbsp;<span class="position-label">Eğitmen</span></td>
+                          <td class="dive-planning-cell" data-slot="2" data-group="3" data-position="5">&nbsp;<span class="position-label">Eğitmen</span></td>
+                          <td class="dive-planning-cell" data-slot="2" data-group="4" data-position="5">&nbsp;<span class="position-label">Eğitmen</span></td>
+                          <td class="dive-planning-cell" data-slot="2" data-group="5" data-position="5">&nbsp;<span class="position-label">Eğitmen</span></td>
+                        </tr>
+                        
+                        <!-- Slot 3 -->
+                        <tr>
+                          <td class="slot-header" rowspan="5">Slot 3</td>
+                          <td class="dive-planning-cell" data-slot="3" data-group="1" data-position="1">&nbsp;</td>
+                          <td class="dive-planning-cell" data-slot="3" data-group="2" data-position="1">&nbsp;</td>
+                          <td class="dive-planning-cell" data-slot="3" data-group="3" data-position="1">&nbsp;</td>
+                          <td class="dive-planning-cell" data-slot="3" data-group="4" data-position="1">&nbsp;</td>
+                          <td class="dive-planning-cell" data-slot="3" data-group="5" data-position="1">&nbsp;</td>
+                        </tr>
+                        <tr>
+                          <td class="dive-planning-cell" data-slot="3" data-group="1" data-position="2">&nbsp;</td>
+                          <td class="dive-planning-cell" data-slot="3" data-group="2" data-position="2">&nbsp;</td>
+                          <td class="dive-planning-cell" data-slot="3" data-group="3" data-position="2">&nbsp;</td>
+                          <td class="dive-planning-cell" data-slot="3" data-group="4" data-position="2">&nbsp;</td>
+                          <td class="dive-planning-cell" data-slot="3" data-group="5" data-position="2">&nbsp;</td>
+                        </tr>
+                        <tr>
+                          <td class="dive-planning-cell" data-slot="3" data-group="1" data-position="3">&nbsp;</td>
+                          <td class="dive-planning-cell" data-slot="3" data-group="2" data-position="3">&nbsp;</td>
+                          <td class="dive-planning-cell" data-slot="3" data-group="3" data-position="3">&nbsp;</td>
+                          <td class="dive-planning-cell" data-slot="3" data-group="4" data-position="3">&nbsp;</td>
+                          <td class="dive-planning-cell" data-slot="3" data-group="5" data-position="3">&nbsp;</td>
+                        </tr>
+                        <tr>
+                          <td class="dive-planning-cell" data-slot="3" data-group="1" data-position="4">&nbsp;</td>
+                          <td class="dive-planning-cell" data-slot="3" data-group="2" data-position="4">&nbsp;</td>
+                          <td class="dive-planning-cell" data-slot="3" data-group="3" data-position="4">&nbsp;</td>
+                          <td class="dive-planning-cell" data-slot="3" data-group="4" data-position="4">&nbsp;</td>
+                          <td class="dive-planning-cell" data-slot="3" data-group="5" data-position="4">&nbsp;</td>
+                        </tr>
+                        <tr>
+                          <td class="dive-planning-cell" data-slot="3" data-group="1" data-position="5">&nbsp;<span class="position-label">Eğitmen</span></td>
+                          <td class="dive-planning-cell" data-slot="3" data-group="2" data-position="5">&nbsp;<span class="position-label">Eğitmen</span></td>
+                          <td class="dive-planning-cell" data-slot="3" data-group="3" data-position="5">&nbsp;<span class="position-label">Eğitmen</span></td>
+                          <td class="dive-planning-cell" data-slot="3" data-group="4" data-position="5">&nbsp;<span class="position-label">Eğitmen</span></td>
+                          <td class="dive-planning-cell" data-slot="3" data-group="5" data-position="5">&nbsp;<span class="position-label">Eğitmen</span></td>
+                        </tr>
+                        
+                        <!-- Slot 4 -->
+                        <tr>
+                          <td class="slot-header" rowspan="5">Slot 4</td>
+                          <td class="dive-planning-cell" data-slot="4" data-group="1" data-position="1"></td>
+                          <td class="dive-planning-cell" data-slot="4" data-group="2" data-position="1"></td>
+                          <td class="dive-planning-cell" data-slot="4" data-group="3" data-position="1"></td>
+                          <td class="dive-planning-cell" data-slot="4" data-group="4" data-position="1"></td>
+                          <td class="dive-planning-cell" data-slot="4" data-group="5" data-position="1"></td>
+                        </tr>
+                        <tr>
+                          <td class="dive-planning-cell" data-slot="4" data-group="1" data-position="2"></td>
+                          <td class="dive-planning-cell" data-slot="4" data-group="2" data-position="2"></td>
+                          <td class="dive-planning-cell" data-slot="4" data-group="3" data-position="2"></td>
+                          <td class="dive-planning-cell" data-slot="4" data-group="4" data-position="2"></td>
+                          <td class="dive-planning-cell" data-slot="4" data-group="5" data-position="2"></td>
+                        </tr>
+                        <tr>
+                          <td class="dive-planning-cell" data-slot="4" data-group="1" data-position="3"></td>
+                          <td class="dive-planning-cell" data-slot="4" data-group="2" data-position="3"></td>
+                          <td class="dive-planning-cell" data-slot="4" data-group="3" data-position="3"></td>
+                          <td class="dive-planning-cell" data-slot="4" data-group="4" data-position="3"></td>
+                          <td class="dive-planning-cell" data-slot="4" data-group="5" data-position="3"></td>
+                        </tr>
+                        <tr>
+                          <td class="dive-planning-cell" data-slot="4" data-group="1" data-position="4"></td>
+                          <td class="dive-planning-cell" data-slot="4" data-group="2" data-position="4"></td>
+                          <td class="dive-planning-cell" data-slot="4" data-group="3" data-position="4"></td>
+                          <td class="dive-planning-cell" data-slot="4" data-group="4" data-position="4"></td>
+                          <td class="dive-planning-cell" data-slot="4" data-group="5" data-position="4"></td>
+                        </tr>
+                        <tr>
+                          <td class="dive-planning-cell" data-slot="4" data-group="1" data-position="5"><span class="position-label">Eğitmen</span></td>
+                          <td class="dive-planning-cell" data-slot="4" data-group="2" data-position="5"><span class="position-label">Eğitmen</span></td>
+                          <td class="dive-planning-cell" data-slot="4" data-group="3" data-position="5"><span class="position-label">Eğitmen</span></td>
+                          <td class="dive-planning-cell" data-slot="4" data-group="4" data-position="5"><span class="position-label">Eğitmen</span></td>
+                          <td class="dive-planning-cell" data-slot="4" data-group="5" data-position="5"><span class="position-label">Eğitmen</span></td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+            </div>
+            <div id="planning-edit-modal-footer" class="modal-footer">
+                <button id="planning-edit-cancel" class="btn btn-secondary">İptal</button>
+                <button id="planning-edit-save" class="btn btn-primary">Planlamayı Kaydet</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase Core SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+    <!-- Firebase Auth ve Firestore -->
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+    <!-- QR kod oluşturucu -->
+    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.1/build/qrcode.min.js"></script>
+    <!-- TinyMCE Rich Text Editor -->
+    <script src="https://cdn.tiny.cloud/1/no-api-key/tinymce/6/tinymce.min.js" referrerpolicy="origin"></script>
+
+    <!-- Uygulama kodları - en son yüklenir -->
+    <script src="script.js"></script>
+  </body>
+</html>
