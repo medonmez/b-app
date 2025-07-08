@@ -26,10 +26,18 @@ BUSAS App, Firebase tabanlı bir dalış kulübü yönetim uygulamasıdır. Kull
    npm install
    ```
 
-3. Firebase projenizi oluşturun ve `public/script.js` içindeki `firebaseConfig` alanını kendi bilgilerinizle güncelleyin.
+3. Firebase projenizi oluşturun ve `.env` dosyasını kendi bilgilerinizle güncelleyin:
+   ```sh
+   cp .env.example .env
+   # .env dosyasını düzenleyin ve Firebase bilgilerinizi girin
+   ```
 
 4. Geliştirme için:
-   - `public/index.html` dosyasını bir tarayıcıda açabilirsiniz.
+   ```sh
+   npm run dev
+   ```
+   Uygulama http://localhost:3000 adresinde çalışacaktır.
+   
    - Firebase Hosting kullanıyorsanız:
      ```sh
      firebase serve

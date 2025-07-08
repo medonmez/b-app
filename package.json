@@ -1,5 +1,15 @@
 {
+  "name": "busas-app",
+  "version": "1.0.0",
+  "description": "Firebase tabanlı dalış kulübü yönetim uygulaması",
+  "main": "public/script.js",
+  "scripts": {
+    "dev": "node -r dotenv/config server.js",
+    "start": "node -r dotenv/config server.js"
+  },
   "dependencies": {
-    "firebase": "^11.5.0"
+    "firebase": "^11.5.0",
+    "dotenv": "^16.3.1",
+    "express": "^4.18.2"
   }
 }

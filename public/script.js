@@ -1,15 +1,44 @@
 // ... (Firebase config ve önceki console logları) ...
 // For Firebase JS SDK v7.20.0 and later, measurementId is optional
 
-const firebaseConfig = {
-    apiKey: "AIzaSyBMiwLdDaa4DBxi1IizvDJRqNZNfbGXgYY",
-    authDomain: "busas-app.firebaseapp.com",
-    projectId: "busas-app",
-    storageBucket: "busas-app.appspot.com",
-    messagingSenderId: "551993626759",
-    appId: "1:551993626759:web:50eef523b7459f000de822",
-    measurementId: "G-4F3MPNKP6E"
-};
+// Firebase config'i API'den al
+let firebaseConfig = null;
+
+// Config'i yükle
+async function loadFirebaseConfig() {
+    try {
+        const response = await fetch('/api/config');
+        const data = await response.json();
+        firebaseConfig = data.firebase;
+        
+        // Firebase'i başlat
+        firebase.initializeApp(firebaseConfig);
+        
+        // Global Auth nesnelerini tanımla
+        auth = firebase.auth();
+        db = firebase.firestore();
+        
+        console.log("Firebase yapılandırması yüklendi");
+        
+        // Uygulamayı başlat
+        initializeApp();
+    } catch (error) {
+        console.error("Firebase config yüklenirken hata:", error);
+        document.body.innerHTML = '<div style="text-align: center; padding: 50px;"><h2>Uygulama yüklenirken hata oluştu</h2><p>Lütfen sayfayı yenileyin.</p></div>';
+    }
+}
+
+// Uygulamayı başlat
+function initializeApp() {
+    // Mevcut kod buraya gelecek
+    setupNavigation();
+    setupDashboardNavCards();
+    setupTrainingTabs();
+    setupAdminPanelTabs();
+    
+    // Auth state observer'ı başlat
+    auth.onAuthStateChanged(authStateObserver);
+}
 
 // Debugging: Firebase yapılandırmasını göster
 console.log("Firebase yapılandırması:", JSON.stringify(firebaseConfig));
@@ -3781,4 +3810,9 @@ document.addEventListener('DOMContentLoaded', () => {
             mainContent.innerHTML = `<p style="color: red;">Uygulama başlatılırken bir hata oluştu: ${e.message}. Lütfen konsolu kontrol edin.</p>`;
         }
     }
+});
+
+// Uygulamayı başlat
+document.addEventListener('DOMContentLoaded', () => {
+    loadFirebaseConfig();
 }); 
